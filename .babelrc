@@ -1,0 +1,6 @@
+{
+    "presets": ["env", "react"],
+    "plugins": [
+        "transform-class-properties" // this allows for cleaner key-value pair properties and methods in classes 
+    ]
+}
