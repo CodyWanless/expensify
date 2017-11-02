@@ -3,25 +3,25 @@ import { connect } from 'react-redux';
 import { setTextFilter, sortByAmount, sortByDate, setStartDate, setEndDate } from './../actions/filters';
 import { DateRangePicker } from 'react-dates';
 
-class ExpenseListFilters extends React.Component {
+export class ExpenseListFilters extends React.Component {
     state = {
         calendarFocused: null
     };
 
-    sortByChangedHandler = (e, props) => {
+    sortByChangedHandler = (e) => {
         const targetSortBy = e.target.value;
         if (targetSortBy === "date") {
-            props.dispatch(sortByDate());
+            this.props.sortByDate();
         } else if (targetSortBy === "amount") {
-            props.dispatch(sortByAmount());
+            this.props.sortByAmount();
         } else {
             throw new Error("Sort by not supported");
         }
     }
 
     onDatesChange = ({ startDate, endDate }) => {
-        this.props.dispatch(setStartDate(startDate));
-        this.props.dispatch(setEndDate(endDate));
+        this.props.setStartDate(startDate);
+        this.props.setEndDate(endDate);
     }
 
     onFocusChange = (calendarFocused) => {
@@ -30,15 +30,17 @@ class ExpenseListFilters extends React.Component {
         }));
     }
 
+    onTextChange = (e) => {
+        this.props.setTextFilter(e.target.value);
+    }
+
     render() {
         return (
             <div>
                 <input type="text"
-                    value={this.props.filters.text} onChange={(e) => {
-                        this.props.dispatch(setTextFilter(e.target.value));
-                    }} />
+                    value={this.props.filters.text} onChange={this.onTextChange} />
                 <select value={this.props.filters.sortBy}
-                    onChange={e => sortByChangedHandler(e, this.props)}>
+                    onChange={this.sortByChangedHandler}>
                     <option value="date">Date</option>
                     <option value="amount">Amount</option>
                 </select>
@@ -57,10 +59,16 @@ class ExpenseListFilters extends React.Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        filters: state.filters
-    };
-};
+const mapDispatchToProps = (dispatch) => ({
+    setTextFilter: text => dispatch(setTextFilter(text)),
+    sortByDate: () => dispatch(sortByDate()),
+    sortByAmount: () => dispatch(sortByAmount()),
+    setStartDate: startDate => dispatch(setStartDate(startDate)),
+    setEndDate: endDate => dispatch(setEndDate(endDate))
+});
 
-export default connect(mapStateToProps)(ExpenseListFilters);
+const mapStateToProps = (state) => ({
+    filters: state.filters
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ExpenseListFilters);

@@ -25,7 +25,7 @@ test('should set up edit expense action object', () => {
         updates: { ...expectedObject }
     })
 });
-
+ 
 test('should set up add expense action object with provided values', () => {
     const expenseData = {
         amount: 12345,
