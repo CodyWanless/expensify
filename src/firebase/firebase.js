@@ -1,4 +1,6 @@
-import * as firebase from 'firebase';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, set, ref, get, remove, update, push } from 'firebase/database';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const config = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -9,9 +11,50 @@ const config = {
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID
 };
 
-firebase.initializeApp(config);
+const firebaseApp = initializeApp(config);
 
-const database = firebase.database();
-const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+const database = getDatabase(firebaseApp);
+const googleAuthProvider = new GoogleAuthProvider();
+const auth = getAuth(firebaseApp);
 
-export { firebase, googleAuthProvider, database as default };
+const handleAuthStateChange = (onAuthenticated, onSignOut) => {
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            onAuthenticated(user);
+        } else {
+            onSignOut();
+        }
+    });
+}
+
+const signIn = async () => {
+    await signInWithPopup(auth, googleAuthProvider);
+};
+
+const signOut = async () => {
+    await auth.signOut();
+}
+
+const expenseRepository = {
+    insert: async (expense) => {
+        const dbRef = ref(database, `users/${auth.currentUser.uid}/expenses`);
+        const pushRef = await push(dbRef);
+        await set(pushRef, expense);
+
+        return pushRef.key;
+    },
+    getSnapshot: async () => {
+        const dbRef = ref(database, `users/${auth.currentUser.uid}/expenses`);
+        return await get(dbRef, 'value');
+    },
+    update: async (id, expense) => {
+        const dbRef = ref(database, `users/${auth.currentUser.uid}/expenses/${id}`);
+        await update(dbRef, expense);
+    },
+    delete: async (id) => {
+        const dbRef = ref(database, `users/${auth.currentUser.uid}/expenses/${id}`);
+        await remove(dbRef);
+    },
+};
+
+export { handleAuthStateChange, signIn, signOut, expenseRepository as default };

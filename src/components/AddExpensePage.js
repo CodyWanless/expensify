@@ -3,7 +3,7 @@ import ExpenseForm from './ExpenseForm';
 import { connect } from 'react-redux';
 import { startAddExpense } from './../actions/expenses';
 
-export class AddExpensePage extends React.Component { 
+export class AddExpensePage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -15,22 +15,23 @@ export class AddExpensePage extends React.Component {
             await this.props.startAddExpense(expense);
             this.props.history.push('/');
         } catch (e) {
+            console.log('hat');
             console.log(`Error adding expense: ${e}`);
         }
     }
 
     render() {
         return (
-        <div>   
-            <div className="page-header">
-                <div className="content-container" >
-                    <h1 className="page-header__title">Add Expense</h1>
+            <div>
+                <div className="page-header">
+                    <div className="content-container" >
+                        <h1 className="page-header__title">Add Expense</h1>
+                    </div>
                 </div>
-            </div>
-            <div className="content-container" >
-                <ExpenseForm onSubmit={this.onSubmit} />
-            </div>
-        </div>);  
+                <div className="content-container" >
+                    <ExpenseForm onSubmit={this.onSubmit} />
+                </div>
+            </div>);
     }
 }
 

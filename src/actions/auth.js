@@ -1,9 +1,9 @@
-import { firebase, googleAuthProvider } from '../firebase/firebase';
+import { signIn, signOut } from '../firebase/firebase';
 
 export const startLogin = () => {
     return async () => {
-        try{ 
-            await firebase.auth().signInWithPopup(googleAuthProvider);
+        try {
+            await signIn();
         } catch (e) {
             console.log(e);
         }
@@ -18,7 +18,7 @@ export const login = (uid) => ({
 export const startLogout = () => {
     return async () => {
         try {
-            await firebase.auth().signOut();
+            await signOut();
         } catch (e) {
             console.log(e);
         }

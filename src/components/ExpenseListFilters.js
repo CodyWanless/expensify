@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { setTextFilter, sortByAmount, sortByDate, setStartDate, setEndDate } from './../actions/filters';
-import { DateRangePicker } from 'react-dates';
+// import { DateRangePicker } from 'react-dates';
 
 export class ExpenseListFilters extends React.Component {
     state = {
@@ -39,11 +39,11 @@ export class ExpenseListFilters extends React.Component {
             <div className="content-container">
                 <div className="input-group">
                     <div className="input-group__item">
-                    <input type="text"
-                        className="text-input"
-                        value={this.props.filters.text}
-                        placeholder="Search Expenses"
-                        onChange={this.onTextChange} /> 
+                        <input type="text"
+                            className="text-input"
+                            value={this.props.filters.text}
+                            placeholder="Search Expenses"
+                            onChange={this.onTextChange} />
                     </div>
                     <div className="input-group__item">
                         <select value={this.props.filters.sortBy}
@@ -54,7 +54,7 @@ export class ExpenseListFilters extends React.Component {
                         </select>
                     </div>
                     <div className="input-group__item">
-                        <DateRangePicker
+                        {/* <DateRangePicker
                         startDate={this.props.filters.startDate}
                         endDate={this.props.filters.endDate}
                         onDatesChange={this.onDatesChange}
@@ -63,7 +63,7 @@ export class ExpenseListFilters extends React.Component {
                         numberOfMonths={1}
                         isOutsideRange={day => false}
                         showClearDates={true}
-                        />
+                        /> */}
                     </div>
                 </div>
             </div>

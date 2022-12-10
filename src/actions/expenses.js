@@ -1,4 +1,3 @@
-import uuid from 'uuid';
 import database from '../firebase/firebase';
 
 // ADD_EXPENSE
@@ -9,12 +8,11 @@ export const addExpense = (expense) => ({
 
 export const startAddExpense = (expenseData = {}) => {
     return async (dispatch, getState) => {
-        const uid = getState().auth.uid;
         const {
-            description = '', 
-            note = '', 
-            amount = 0, 
-            createdAt = 0 
+            description = '',
+            note = '',
+            amount = 0,
+            createdAt = 0
         } = expenseData;
         const expense = {
             description,
@@ -23,25 +21,23 @@ export const startAddExpense = (expenseData = {}) => {
             createdAt
         };
 
-        const ref = await database.ref(`users/${uid}/expenses`).push(expense);
+        const key = await database.insert(expense);
         return dispatch(addExpense({
-            id: ref.key,
+            id: key,
             ...expense
         }));
     };
 };
 
 // REMOVE_EXPENSE
-export const removeExpense = ({id}) => ({
+export const removeExpense = ({ id }) => ({
     type: 'REMOVE_EXPENSE',
     id
 });
 
 export const startRemoveExpense = ({ id }) => {
     return async (dispatch, getState) => {
-        const uid = getState().auth.uid;
-        await database.ref(`users/${uid}/expenses/${id}`).remove();
-
+        await database.delete(id);
         return dispatch(removeExpense({ id }));
     };
 };
@@ -55,9 +51,9 @@ export const editExpense = (id, updates) => ({
 
 export const startEditExpense = (id, updates) => {
     return async (dispatch, getState) => {
-        const uid = getState().auth.uid;
-        await database.ref(`users/${uid}/expenses/${id}`).update(updates);
+        console.log(database);
 
+        await database.update(id, updates);
         return dispatch(editExpense(id, updates));
     };
 };
@@ -69,10 +65,9 @@ export const setExpenses = (expenses) => ({
 
 export const startSetExpenses = () => {
     return async (dispatch, getState) => {
-        const uid = getState().auth.uid;
         const expenses = [];
 
-        const snapshot = await database.ref(`users/${uid}/expenses`).once('value');
+        const snapshot = await database.getSnapshot();
         snapshot.forEach(childSnapshot => {
             expenses.push({
                 id: childSnapshot.key,
