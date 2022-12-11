@@ -51,8 +51,6 @@ export const editExpense = (id, updates) => ({
 
 export const startEditExpense = (id, updates) => {
     return async (dispatch, getState) => {
-        console.log(database);
-
         await database.update(id, updates);
         return dispatch(editExpense(id, updates));
     };
