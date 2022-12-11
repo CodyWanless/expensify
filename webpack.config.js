@@ -62,9 +62,9 @@ module.exports = (env, argv) => {
             static: {
                 directory: publicPath
             },
-            // devMiddleware: {
-            //     publicPath: '/dist/'
-            // },
+            devMiddleware: {
+                publicPath: '/dist/'
+            },
             historyApiFallback: true,
             client: {
                 logging: 'info',
