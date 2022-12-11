@@ -1,19 +1,16 @@
-import { Router, Route, Routes, BrowserRouter } from 'react-router-dom';
 import React from 'react';
-import { createBrowserHistory } from 'history';
-import ExpenseDashboardPage from './../components/ExpenseDashboardPage';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import LoginPage from '../components/LoginPage';
 import AddExpensePage from './../components/AddExpensePage';
 import EditExpensePage from './../components/EditExpensePage';
+import ExpenseDashboardPage from './../components/ExpenseDashboardPage';
 import HelpPage from './../components/HelpPage';
 import NotFoundPage from './../components/NotFoundPage';
-import LoginPage from '../components/LoginPage';
 import RedirectOnAuth from './RedirectOnAuth';
 import RequireAuth from './RequireAuth';
 
-export const history = createBrowserHistory();
-
 const AppRouter = () => (
-    <BrowserRouter location={history.location} navigator={history} >
+    <BrowserRouter>
         <div>
             <Routes>
                 <Route path="/"

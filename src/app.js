@@ -1,14 +1,15 @@
 import React from 'react';
+import "react-datepicker/dist/react-datepicker.css";
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
-import AppRouter, { history } from './routers/AppRouter';
-import { startSetExpenses } from './actions/expenses';
+import { Link } from 'react-router-dom';
 import { login, logout } from './actions/auth';
-import configureStore from './store/configureStore';
-import './styles/styles.scss'
-import "react-datepicker/dist/react-datepicker.css";
-import { handleAuthStateChange } from './firebase/firebase';
+import { startSetExpenses } from './actions/expenses';
 import LoadingPage from './components/LoadingPage';
+import { handleAuthStateChange } from './firebase/firebase';
+import AppRouter from './routers/AppRouter';
+import configureStore from './store/configureStore';
+import './styles/styles.scss';
 
 const store = configureStore();
 
@@ -36,14 +37,14 @@ handleAuthStateChange(
         store.dispatch(login(user.uid));
         store.dispatch(startSetExpenses()).then(() => {
             renderApp();
-            if (history.location.pathname === '/') {
-                history.push('/dashboard');
+            if (location.pathname === '/') {
+                <Link to="/" />
             }
         }).catch(e => console.log(e));
     },
     () => {
         store.dispatch(logout());
         renderApp();
-        history.push('/');
+        <Link to='/' />
     }
 );

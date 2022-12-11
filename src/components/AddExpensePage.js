@@ -1,42 +1,27 @@
 import React from 'react';
-import ExpenseForm from './ExpenseForm';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { startAddExpense } from './../actions/expenses';
+import ExpenseForm from './ExpenseForm';
 
-export class AddExpensePage extends React.Component {
-    constructor(props) {
-        super(props);
+export default function AddExpensePage() {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-        this.onSubmit = this.onSubmit.bind(this);
+    const onSubmit = async (expense) => {
+        await dispatch(startAddExpense(expense));
+        navigate('/');
     }
 
-    async onSubmit(expense) {
-        try {
-            await this.props.startAddExpense(expense);
-            this.props.history.push('/');
-        } catch (e) {
-            console.log('hat');
-            console.log(`Error adding expense: ${e}`);
-        }
-    }
-
-    render() {
-        return (
-            <div>
-                <div className="page-header">
-                    <div className="content-container" >
-                        <h1 className="page-header__title">Add Expense</h1>
-                    </div>
-                </div>
+    return (
+        <div>
+            <div className="page-header">
                 <div className="content-container" >
-                    <ExpenseForm onSubmit={this.onSubmit} />
+                    <h1 className="page-header__title">Add Expense</h1>
                 </div>
-            </div>);
-    }
+            </div>
+            <div className="content-container" >
+                <ExpenseForm onSubmit={onSubmit} />
+            </div>
+        </div>);
 }
-
-const mapDispatchToProps = (dispatch) => ({
-    startAddExpense: expense => dispatch(startAddExpense(expense))
-});
-
-export default connect(undefined, mapDispatchToProps)(AddExpensePage);

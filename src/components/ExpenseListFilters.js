@@ -1,7 +1,7 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { setTextFilter, sortByAmount, sortByDate, setStartDate, setEndDate } from './../actions/filters';
 import DatePicker from 'react-datepicker';
+import { connect } from 'react-redux';
+import { setEndDate, setStartDate, setTextFilter, sortByAmount, sortByDate } from './../actions/filters';
 
 export class ExpenseListFilters extends React.Component {
     state = {
@@ -20,8 +20,8 @@ export class ExpenseListFilters extends React.Component {
     }
 
     onDatesChange = ([startDate, endDate]) => {
-        this.props.setStartDate(startDate);
-        this.props.setEndDate(endDate);
+        this.props.setStartDate(startDate?.getTime());
+        this.props.setEndDate(endDate?.getTime());
     }
 
     onFocusChange = (calendarFocused) => {
@@ -80,7 +80,11 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 const mapStateToProps = (state) => ({
-    filters: state.filters
+    filters: {
+        ...state.filters,
+        startDate: state.filters.startDate ? new Date(state.filters.startDate) : null,
+        endDate: state.filters.endDate ? new Date(state.filters.endDate) : null
+    }
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExpenseListFilters);
