@@ -1,5 +1,5 @@
 import React from 'react';
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -14,9 +14,9 @@ import './styles/styles.scss';
 const store = configureStore();
 
 const jsx = (
-    <Provider store={store}>
-        <AppRouter />
-    </Provider>
+  <Provider store={store}>
+    <AppRouter />
+  </Provider>
 );
 
 let hasRendered = false;
@@ -24,27 +24,31 @@ const container = document.getElementById('app');
 const root = createRoot(container);
 
 const renderApp = () => {
-    if (!hasRendered) {
-        root.render(jsx);
-        hasRendered = true;
-    }
+  if (!hasRendered) {
+    root.render(jsx);
+    hasRendered = true;
+  }
 };
 
 root.render(<LoadingPage />);
 
 handleAuthStateChange(
-    (user) => {
-        store.dispatch(login(user.uid));
-        store.dispatch(startSetExpenses()).then(() => {
-            renderApp();
-            if (location.pathname === '/') {
-                <Link to="/" />
-            }
-        }).catch(e => console.log(e));
-    },
-    () => {
-        store.dispatch(logout());
+  (user) => {
+    store.dispatch(login(user.uid));
+    store
+      .dispatch(startSetExpenses())
+      .then(() => {
         renderApp();
-        <Link to='/' />
-    }
+        // eslint-disable-next-line no-restricted-globals
+        if (location.pathname === '/') {
+          <Link to="/" />;
+        }
+      })
+      .catch((e) => console.log(e));
+  },
+  () => {
+    store.dispatch(logout());
+    renderApp();
+    <Link to="/" />;
+  },
 );
