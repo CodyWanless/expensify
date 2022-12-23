@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import selectExpenses from '../selectors/expenses';
 import ExpenseListItem from './ExpenseListItem';
 
-export function ExpenseList(props) {
+function ExpenseList(props) {
   return (
     <div className="content-container">
       <div className="list-header">

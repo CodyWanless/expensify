@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import expensesSelector from '../selectors/expenses';
 import expensesTotalSelector from '../selectors/expenses-total';
 
-export function ExpensesSummary({ expensesCount, expensesTotal }) {
+function ExpensesSummary({ expensesCount, expensesTotal }) {
   const expensesText = expensesCount === 1 ? 'expense' : 'expenses';
 
   return (

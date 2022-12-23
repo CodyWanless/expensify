@@ -37,54 +37,61 @@ export default class ExpenseForm extends React.Component {
     }
   };
 
-  onSubmit = (e) => {
+  saveExpense = (e) => {
     e.preventDefault();
 
-    if (!this.state.description || !this.state.amount) {
+    const { description, amount, createdAt, note } = this.state;
+    const { onSubmit } = this.props;
+
+    if (!description || !amount) {
       const error = 'Please provide description and amount.';
-      return this.setState(() => ({ error }));
+      this.setState(() => ({ error }));
+    } else {
+      this.setState(() => ({ error: '' }));
+      onSubmit({
+        description,
+        amount: parseFloat(amount, 10) * 100,
+        createdAt: createdAt.valueOf(),
+        note,
+      });
     }
-    this.setState(() => ({ error: '' }));
-    this.props.onSubmit({
-      description: this.state.description,
-      amount: parseFloat(this.state.amount, 10) * 100,
-      createdAt: this.state.createdAt.valueOf(),
-      note: this.state.note,
-    });
   };
 
   render() {
+    const { error, description, amount, note, createdAt } = this.state;
     return (
-      <form className="form" onSubmit={this.onSubmit}>
-        {this.state.error && <p className="form__error">{this.state.error}</p>}
+      <form className="form" onSubmit={this.saveExpense}>
+        {error && <p className="form__error">{error}</p>}
         <input
           type="text"
           placeholder="Description"
-          autoFocus
           className="text-input"
-          value={this.state.description}
+          value={description}
           onChange={this.onDescriptionChange}
         />
         <input
           type="text"
           placeholder="Amount"
           className="text-input"
-          value={this.state.amount}
+          value={amount}
           onChange={this.onAmountChange}
         />
         <DatePicker
-          selected={this.state.createdAt}
+          selected={createdAt}
           onChange={this.onDateChange}
           className="text-input"
+          id="created-at_date-picker"
         />
         <textarea
           placeholder="Add a note for your expense (optional)"
-          value={this.state.note}
+          value={note}
           className="textarea"
           onChange={this.onNoteChange}
         />
         <div>
-          <button className="button">Save Expense</button>
+          <button type="submit" className="button">
+            Save Expense
+          </button>
         </div>
       </form>
     );

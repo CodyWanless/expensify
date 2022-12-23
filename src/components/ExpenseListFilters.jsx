@@ -9,7 +9,7 @@ import {
   sortByDate,
 } from '../actions/filters';
 
-export class ExpenseListFilters extends React.Component {
+class ExpenseListFilters extends React.Component {
   state = {
     calendarFocused: null,
   };
