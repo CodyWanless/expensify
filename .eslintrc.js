@@ -1,8 +1,8 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es2021: true,
-    'jest/globals': true,
   },
   extends: ['plugin:react/recommended', 'airbnb', 'prettier'],
   parserOptions: {
@@ -15,6 +15,9 @@ module.exports = {
   },
   overrides: [
     {
+      env: {
+        'jest/globals': true,
+      },
       files: ['**/tests/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
       plugins: ['jest', 'testing-library'],
       extends: ['plugin:testing-library/react', 'plugin:jest/recommended'],
