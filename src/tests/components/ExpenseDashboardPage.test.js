@@ -1,9 +1,21 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import {shallow} from 'enzyme';
-import ExpenseDashboardPage  from '../../components/ExpenseDashboardPage';
-import expenses from '../fixtures/expenses';
+import ExpenseDashboardPage from '../../components/ExpenseDashboardPage';
 
-test('should render ExpenseDashboardPage correctly', () => {
-    const wrapper = shallow(<ExpenseDashboardPage />);
-    expect(wrapper).toMatchSnapshot();
+jest.mock('../../components/ExpensesSummary');
+jest.mock('../../components/ExpenseList');
+jest.mock(
+  '../../components/ExpenseListFilters',
+  () =>
+    function ExpenseListFilters() {
+      return <div>Expense List Filter</div>;
+    },
+);
+
+describe('ExpenseDashboardPage', () => {
+  it('renders', () => {
+    render(<ExpenseDashboardPage />);
+
+    expect(screen.getByText('Expense List Filter')).toBeInTheDocument();
+  });
 });

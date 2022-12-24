@@ -1,16 +1,13 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import {shallow} from 'enzyme';
 import { ExpensesSummary } from '../../components/ExpensesSummary';
-import expenses from '../fixtures/expenses';
 
-test ('should render ExpensesSummary correctly with 1 item', () => {
-    const wrapper = shallow(<ExpensesSummary expensesCount={1} expensesTotal={4000} />);
+jest.mock('react-router-dom');
 
-    expect(wrapper).toMatchSnapshot();
-});
+describe('ExpensesSummary', () => {
+  it('should render ExpensesSummary correctly with 1 item', () => {
+    render(<ExpensesSummary expensesCount={1} expensesTotal={4000} />);
 
-test ('should render ExpensesSummary correctly with multiple items', () => {
-    const wrapper = shallow(<ExpensesSummary expensesCount={3} expensesTotal={4000} />);
-
-    expect(wrapper).toMatchSnapshot();
+    expect(screen.getByText('$40.00', { exact: false })).toBeInTheDocument();
+  });
 });

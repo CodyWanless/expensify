@@ -1,24 +1,65 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { shallow } from 'enzyme';
-import { AddExpensePage } from '../../components/AddExpensePage';
+import { startAddExpense } from '../../actions/expenses';
 import expenses from '../fixtures/expenses';
 
-let startAddExpense, history, wrapper;
-beforeEach(() => {
-    startAddExpense = jest.fn();
-    history = { push: jest.fn() };
-    wrapper = shallow(<AddExpensePage startAddExpense={startAddExpense} history={history} />);
-});
+import AddExpensePage from '../../components/AddExpensePage';
 
-test ('should render AddExpensePage correctly', () => {
-    expect(wrapper).toMatchSnapshot();
-});
+let mockExpense;
+jest.mock(
+  '../../components/ExpenseForm',
+  () =>
+    function ExpenseForm(props) {
+      async function formSubmit(e) {
+        e.preventDefault();
+        const { onSubmit } = props;
+        await onSubmit(mockExpense);
+      }
 
-test ('should handle onSubmit', (done) => {
-    wrapper.find('ExpenseForm').prop('onSubmit')(expenses[1]).then(() => 
-    {
-        expect(history.push).toHaveBeenLastCalledWith('/');
-        expect(startAddExpense).toHaveBeenLastCalledWith(expenses[1]);
-        done();
+      return (
+        <form onSubmit={formSubmit}>
+          <button type="submit">Submit</button>
+        </form>
+      );
+    },
+);
+
+jest.mock('../../actions/expenses', () => ({
+  startAddExpense: jest.fn(),
+}));
+
+const mockDispatch = jest.fn();
+jest.mock('react-redux', () => ({ useDispatch: () => mockDispatch }));
+
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => mockNavigate,
+}));
+
+describe('AddExpensePage', () => {
+  beforeEach(() => {
+    [mockExpense] = expenses;
+  });
+
+  it('renders expense page', () => {
+    render(<AddExpensePage />);
+
+    expect(screen.getByText('Add Expense')).toBeInTheDocument();
+  });
+
+  it('adds expense on submit', async () => {
+    render(<AddExpensePage />);
+
+    const startExpenseAction = jest.fn();
+    startAddExpense.mockReturnValue(startExpenseAction);
+
+    const submitButton = screen.getByText('Submit');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/');
     });
+    expect(mockDispatch).toHaveBeenCalledWith(startExpenseAction);
+    expect(startAddExpense).toHaveBeenCalledWith(mockExpense);
+  });
 });

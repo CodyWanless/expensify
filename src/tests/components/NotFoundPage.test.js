@@ -1,9 +1,13 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import {shallow} from 'enzyme';
-import NotFoundPage  from '../../components/NotFoundPage';
-import expenses from '../fixtures/expenses';
+import NotFoundPage from '../../components/NotFoundPage';
 
-test('should render NotFoundPage correctly', () => {
-    const wrapper = shallow(<NotFoundPage />);
-    expect(wrapper).toMatchSnapshot();
+jest.mock('react-router-dom');
+
+describe('NotFoundPage', () => {
+  it('should render NotFoundPage correctly', () => {
+    render(<NotFoundPage />);
+
+    expect(screen.getByText('404', { exact: false })).toBeInTheDocument();
+  });
 });

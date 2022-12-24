@@ -1,104 +1,135 @@
-import React from 'react';
-import { shallow } from 'enzyme';
-import ExpenseForm from '../../components/ExpenseForm';
-import expenses from '../fixtures/expenses';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import moment from 'moment';
+import React from 'react';
+import { act } from 'react-dom/test-utils';
+import ExpenseForm from '../../components/ExpenseForm';
+import ExpenseFixture from '../fixtures/expenses';
 
-test ('should render ExpenseForm correctly', () => {
-    const wrapper = shallow(<ExpenseForm />);
-    expect(wrapper).toMatchSnapshot();
-});
+// jest.mock('react-datepicker');
 
-test('should render ExpenseForm with expense data', () => {
-    const wrapper = shallow(<ExpenseForm expense={expenses[0]} />);
-    expect(wrapper).toMatchSnapshot();
-});
+describe('ExpenseFrom', () => {
+  it('renders', () => {
+    const view = render(<ExpenseForm />);
+    expect(view.container).toBeTruthy();
+  });
 
-test('should render error for invalid form submission', () => {
-    const wrapper = shallow(<ExpenseForm />);
-    expect(wrapper).toMatchSnapshot();
-    wrapper.find('form').simulate('submit', {
-        preventDefault: () => {}
+  it('renders with existing expense', () => {
+    const [existingExpense] = ExpenseFixture;
+    render(<ExpenseForm expense={existingExpense} />);
+
+    const amountInput = screen.getByDisplayValue(
+      existingExpense.renderedAmount,
+    );
+    const descriptionInput = screen.getByDisplayValue(
+      existingExpense.description,
+    );
+    const noteInput = screen.getByDisplayValue(existingExpense.note);
+
+    expect(amountInput).toBeInTheDocument();
+    expect(descriptionInput).toBeInTheDocument();
+    expect(noteInput).toBeInTheDocument();
+  });
+
+  it('should render error for invalid form submission', async () => {
+    render(<ExpenseForm />);
+    const submitButton = screen.getByText('Save Expense');
+
+    act(() => {
+      submitButton.click();
     });
 
-    expect(wrapper.state('error').length).toBeGreaterThan(0);
-    expect(wrapper).toMatchSnapshot();
-});
+    await waitFor(() => {
+      const errorContent = screen.getByText('Please provide', { exact: false });
+      expect(errorContent).toBeInTheDocument();
+    });
+  });
 
-test ('should set description on input change', () => {
+  it('should set description on input change', async () => {
     const value = 'new description';
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('input').at(0).simulate('change', {
-        target: {
-            value
-        }
+    render(<ExpenseForm />);
+    const descriptionInput = screen.getByPlaceholderText('Description');
+
+    fireEvent.input(descriptionInput, { target: { value } });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(value)).toBeInTheDocument();
     });
+  });
 
-    expect(wrapper.state('description')).toBe(value);
-});
-
-test ('should set note on textarea change', () => {
+  it('should set note on text area change', async () => {
     const value = 'new note';
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('textarea').simulate('change', {
-        target: {
-            value
-        }
+    render(<ExpenseForm />);
+    const noteInput = screen.getByPlaceholderText('Add a note', {
+      exact: false,
     });
 
-    expect(wrapper.state('note')).toBe(value);
-});
+    fireEvent.input(noteInput, { target: { value } });
 
-test ('should set amount if valid input', () => {
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(value)).toBeInTheDocument();
+    });
+  });
+
+  it('should set amount if valid input', async () => {
     const value = '23.50';
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('input').at(1).simulate('change', {
-        target: {
-            value
-        }
+    render(<ExpenseForm />);
+    const amountInput = screen.getByPlaceholderText('Amount');
+
+    fireEvent.input(amountInput, { target: { value } });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(value)).toBeInTheDocument();
     });
+  });
 
-    expect(wrapper.state('amount')).toBe(value);
-});
-
-test ('should not set amount if invalid input', () => {
+  it('should not set amount if invalid input', async () => {
     const value = '12.122';
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('input').at(1).simulate('change', {
-        target: {
-            value
-        }
+    render(<ExpenseForm />);
+    const amountInput = screen.getByPlaceholderText('Amount');
+
+    fireEvent.input(amountInput, { target: { value } });
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue(value)).not.toBeInTheDocument();
     });
+  });
 
-    expect(wrapper.state('amount')).not.toBe(value);
-});
-
-test ('should call onSubmit prop for valid form submission', () => {
+  it('should call onSubmit prop for valid form submission', async () => {
     const onSubmitSpy = jest.fn();
-    const wrapper = shallow(<ExpenseForm onSubmit={onSubmitSpy} expense={expenses[0]} />);
-    wrapper.find('form').simulate('submit', {
-        preventDefault: () => {}
+    const [expense] = ExpenseFixture;
+    render(<ExpenseForm onSubmit={onSubmitSpy} expense={expense} />);
+
+    const submitButton = screen.getByText('Save Expense');
+    act(() => {
+      submitButton.click();
     });
 
-    expect(wrapper.state('error')).toBe('');
-    expect(onSubmitSpy).toHaveBeenLastCalledWith({
-        description: expenses[0].description,
-        amount: expenses[0].amount,
-        note: expenses[0].note,
-        createdAt: expenses[0].createdAt
+    await waitFor(() => {
+      expect(onSubmitSpy).toHaveBeenLastCalledWith({
+        description: expense.description,
+        amount: expense.amount,
+        note: expense.note,
+        createdAt: expense.createdAt,
+      });
     });
-});
 
-test ('should set new date on date change', () => {
-    const now = moment();
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('SingleDatePicker').prop('onDateChange')(now);
-    expect(wrapper.state('createdAt')).toBe(now);
-});
+    const errorContent = screen.queryByText('Please provide', { exact: false });
+    expect(errorContent).not.toBeInTheDocument();
+  });
 
-test ('should set calendar focus on change', () => {
-    const expected = true;
-    const wrapper = shallow(<ExpenseForm />);
-    wrapper.find('SingleDatePicker').prop('onFocusChange')({ focused: expected});
-    expect(wrapper.state('calendarFocused')).toBe(expected);
+  it('should set new date on date change', () => {
+    const epoch = moment();
+    render(<ExpenseForm />);
+
+    // eslint-disable-next-line testing-library/no-node-access
+    const datePickerContainer = document.querySelector(
+      "[id='created-at_date-picker']",
+    );
+
+    fireEvent.input(datePickerContainer, {
+      target: { value: epoch },
+    });
+
+    expect(datePickerContainer.value).toBe('12/31/1969');
+  });
 });

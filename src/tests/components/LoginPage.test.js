@@ -1,16 +1,28 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import {shallow} from 'enzyme';
-import { LoginPage }  from '../../components/LoginPage';
+import { act } from 'react-dom/test-utils';
+import { startLogin } from '../../actions/auth';
+import { LoginPage } from '../../components/LoginPage';
 
-test ('should render LoginPage', () => {
-    const wrapper = shallow(<LoginPage startLogin={() => {}} />);
-    expect(wrapper).toMatchSnapshot();
-});
+jest.mock('../../actions/auth', () => ({
+  startLogin: jest.fn(),
+}));
 
-test ('should call startLogout on button click', () => {
-    const startLogin = jest.fn();
-    const wrapper = shallow(<LoginPage startLogin={startLogin} />);
+describe('LoginPage', () => {
+  test('should render LoginPage', () => {
+    render(<LoginPage startLogin={() => {}} />);
 
-    wrapper.find('button').simulate('click');
+    expect(screen.getByText('Login with Google')).toBeInTheDocument();
+  });
+
+  test('should call startLogout on button click', () => {
+    render(<LoginPage startLogin={startLogin} />);
+
+    const loginButton = screen.getByText('Login with Google');
+    act(() => {
+      loginButton.click();
+    });
+
     expect(startLogin).toHaveBeenCalled();
+  });
 });

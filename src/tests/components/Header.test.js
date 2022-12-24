@@ -1,17 +1,35 @@
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { Header } from '../../components/Header';
+import { act } from 'react-dom/test-utils';
+import { startLogout } from '../../actions/auth';
+import Header from '../../components/Header';
 
-test('should render Header correctly', () => {
-    const wrapper = shallow(<Header startLogout={() => {}}/>);
+const mockDispatch = jest.fn();
+jest.mock('react-redux', () => ({
+  useDispatch: () => mockDispatch,
+}));
 
-    expect(wrapper).toMatchSnapshot();
-});
+jest.mock('react-router-dom');
 
-test ('should call startLogout on button click', () => {
-    const startLogout = jest.fn();
-    const wrapper = shallow(<Header startLogout={startLogout} />);
+jest.mock('../../actions/auth', () => ({
+  startLogout: jest.fn(),
+}));
 
-    wrapper.find('button').simulate('click');
+describe('Header', () => {
+  it('should render Header correctly', () => {
+    render(<Header startLogout={() => {}} />);
+
+    expect(screen.getByText('Logout')).toBeInTheDocument();
+  });
+
+  it('should call startLogout on button click', () => {
+    render(<Header startLogout={startLogout} />);
+
+    const logoutButton = screen.getByText('Logout');
+    act(() => {
+      logoutButton.click();
+    });
+
     expect(startLogout).toHaveBeenCalled();
+  });
 });

@@ -1,166 +1,136 @@
-import { startAddExpense, addExpense, editExpense, removeExpense, setExpenses, startSetExpenses, startRemoveExpense, startEditExpense } from './../../actions/expenses';
+import {
+  addExpense,
+  editExpense,
+  removeExpense,
+  setExpenses,
+  startAddExpense,
+  startEditExpense,
+  startRemoveExpense,
+  startSetExpenses,
+} from '../../actions/expenses';
+import firebase from '../../firebase/firebase';
 import expenses from '../fixtures/expenses';
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import database from '../../firebase/firebase';
 
-const createMockStore = configureMockStore([thunk]);
-const uid = 'thisismytestuid';
-const defaultAuthState = { auth: {uid } };
+jest.mock('../../firebase/firebase');
 
-beforeEach((done) => {
+describe('expense actions', () => {
+  beforeEach(() => {
     const expensesData = {};
     expenses.forEach(({ id, description, note, amount, createdAt }) => {
-        expensesData[id] = { description, note, amount, createdAt };
+      expensesData[id] = { description, note, amount, createdAt };
     });
+  });
 
-    database.ref(`users/${uid}/expenses`).set(expensesData).then(() => done());
-});
-
-test('should set up remove expense action object', () => {
+  it('should set up remove expense action object', () => {
     const id = '1234abc';
     const action = removeExpense({ id });
     expect(action).toEqual({
-        type: 'REMOVE_EXPENSE',
-        id
+      type: 'REMOVE_EXPENSE',
+      id,
     });
-});
+  });
 
-test('should set up edit expense action object', () => {
+  it('should set up edit expense action object', () => {
     const id = '1234abc';
     const expectedObject = {
-        amount: 12345,
-        description: 'desc',
-        note: 'note',
-        createdAt: 12341234
+      amount: 12345,
+      description: 'desc',
+      note: 'note',
+      createdAt: 12341234,
     };
     const action = editExpense(id, expectedObject);
 
     expect(action).toEqual({
-        type: 'EDIT_EXPENSE',
-        id,
-        updates: { ...expectedObject }
+      type: 'EDIT_EXPENSE',
+      id,
+      updates: { ...expectedObject },
     });
-});
- 
-test('should set up add expense action object with provided values', () => {
+  });
+
+  it('should set up add expense action object with provided values', () => {
     const action = addExpense(expenses[0]);
 
     expect(action).toEqual({
-        type: 'ADD_EXPENSE',
-        expense: expenses[0]
+      type: 'ADD_EXPENSE',
+      expense: expenses[0],
     });
-});
+  });
 
-test('should add expense to database and store', (done) => {
-    const store = createMockStore(defaultAuthState);
+  it('should add expense to database and store', async () => {
     const expenseData = {
-        description: 'Mouse',
-        amount: 3000,
-        note: 'This one is better',
-        createdAt: 11234
+      description: 'Mouse',
+      amount: 3000,
+      note: 'This one is better',
+      createdAt: 11234,
     };
 
-    store.dispatch(startAddExpense(expenseData)).then(() => {
-        const actions = store.getActions();
-        expect(actions[0]).toEqual({
-                type: 'ADD_EXPENSE',
-                expense: {
-                    id: expect.any(String),
-                    ...expenseData                
-                }
-            });
-            return database.ref(`users/${uid}/expenses/${actions[0].expense.id}`).once('value');
-        }).then(snapshot => {
-            expect(snapshot.val()).toEqual(expenseData);
-            done();
-        });
-});
+    const mockDispatch = jest.fn();
+    const expenseKey = Math.random();
+    jest.spyOn(firebase, 'insert').mockResolvedValue(expenseKey);
 
-test ('should add expense with defaults to database and store', (done) => {
-    const store = createMockStore(defaultAuthState);
-    const emptyExpenseObject = {
-        description: '', 
-        note: '', 
-        amount: 0, 
-        createdAt: 0 
-    };
+    const startAddExpenseAction = startAddExpense(expenseData);
 
-    store.dispatch(startAddExpense({})).then(() => {
-        const actions = store.getActions();
-        expect(actions[0]).toEqual({
-                type: 'ADD_EXPENSE',
-                expense: {
-                    id: expect.any(String),
-                    ...emptyExpenseObject
-                }
-            });
-            return database.ref(`users/${uid}/expenses/${actions[0].expense.id}`).once('value');
-        }).then(snapshot => {
-            expect(snapshot.val()).toEqual(emptyExpenseObject);
-            done();
-        });
-});
+    await startAddExpenseAction(mockDispatch);
 
-test ('should setup set expense action object with data', () => {
+    expect(mockDispatch).toHaveBeenCalledWith(
+      addExpense({
+        id: expenseKey,
+        ...expenseData,
+      }),
+    );
+  });
+
+  it('should setup set expense action object with data', () => {
     const action = setExpenses(expenses);
 
     expect(action).toEqual({
-        type: 'SET_EXPENSES',
-        expenses
+      type: 'SET_EXPENSES',
+      expenses,
     });
-});
+  });
 
-test ('should fetch the expenses from firebase', (done) => {
-    const store = createMockStore(defaultAuthState);
+  it('should fetch the expenses from firebase', async () => {
+    const mockDispatch = jest.fn();
 
-    store.dispatch(startSetExpenses()).then(() => {
-        const actions = store.getActions();
-        expect(actions[0]).toEqual({
-            type: 'SET_EXPENSES',
-            expenses
-        });
-        done();
-    });
-});
+    const expensesData = expenses.map((e) => ({
+      key: e.id,
+      val: () => e,
+    }));
+    jest.spyOn(firebase, 'getSnapshot').mockResolvedValue(expensesData);
 
-test('should start remove expense action object', (done) => {
-    const store = createMockStore(defaultAuthState);
+    const setExpensesAction = startSetExpenses();
+    await setExpensesAction(mockDispatch);
+
+    expect(mockDispatch).toHaveBeenCalledWith(setExpenses(expenses));
+  });
+
+  it('should start remove expense action object', async () => {
     const id = '1234abc';
 
-    const action = store.dispatch(startRemoveExpense({ id })).then(() => {
-        const actions = store.getActions();
-        expect(actions[0]).toEqual({
-            type: 'REMOVE_EXPENSE',
-            id
-        });
-        return database.ref(`users/${uid}/expenses/${id}`).once('value');
-    }).then(snapshot => {
-        expect(snapshot.val()).toBeFalsy();
-        done();
-    });
-});
+    jest.spyOn(firebase, 'delete').mockResolvedValue();
 
-test ('should edit expense action object', (done) => {
-    const store = createMockStore(defaultAuthState);
+    const mockDispatch = jest.fn();
+    const removeExpenseAction = startRemoveExpense({ id });
+    await removeExpenseAction(mockDispatch);
+
+    expect(mockDispatch).toHaveBeenCalledWith(removeExpense({ id }));
+  });
+
+  it('should edit expense action object', async () => {
     const id = '1234abc';
     const expectedObject = {
-        amount: 12345,
-        description: 'desc',
-        note: 'note',
-        createdAt: 12341234
+      amount: 12345,
+      description: 'desc',
+      note: 'note',
+      createdAt: 12341234,
     };
-    
-    store.dispatch(startEditExpense(id, expectedObject)).then(() => {
-        const actions = store.getActions();
-        expect(actions[0]).toEqual({
-            type: 'EDIT_EXPENSE',
-            id,
-            updates: { ...expectedObject }
-        });
-        return database.ref(`users/${uid}/expenses/${id}`).once('value');
-    }).then(snapshot => {
-        expect(snapshot.val()).toEqual(expectedObject);
-        done();
-    });
+
+    jest.spyOn(firebase, 'update').mockResolvedValue();
+
+    const mockDispatch = jest.fn();
+    const editExpenseAction = startEditExpense(id, expectedObject);
+    await editExpenseAction(mockDispatch);
+
+    expect(mockDispatch).toHaveBeenCalledWith(editExpense(id, expectedObject));
+  });
 });

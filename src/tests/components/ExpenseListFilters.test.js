@@ -1,82 +1,166 @@
-import React from 'react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import moment from 'moment';
-import { shallow } from 'enzyme';
-import { ExpenseListFilters} from '../../components/ExpenseListFilters';
-import { filters, altFilters } from '../fixtures/filters';
+import React from 'react';
+import { ExpenseListFilters } from '../../components/ExpenseListFilters';
+import { altFilters, filters } from '../fixtures/filters';
 
-let setTextFilter, sortByDate, sortByAmount, setStartDate, setEndDate, wrapper;
+describe('ExpenseListFilter', () => {
+  let setTextFilter;
+  let sortByDate;
+  let sortByAmount;
+  let setStartDate;
+  let setEndDate;
 
-beforeEach(() => {
+  beforeEach(() => {
     setTextFilter = jest.fn();
     sortByDate = jest.fn();
     sortByAmount = jest.fn();
     setStartDate = jest.fn();
     setEndDate = jest.fn();
+  });
 
-    wrapper = shallow(<ExpenseListFilters 
+  it('should render ExpenseListFilters correctly', () => {
+    render(
+      <ExpenseListFilters
         filters={filters}
         setTextFilter={setTextFilter}
         sortByDate={sortByDate}
         sortByAmount={sortByAmount}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
-        />);
-});
+      />,
+    );
 
-test ('should render ExpenseListFilters correctly', () => {
-    expect(wrapper).toMatchSnapshot();
-});
+    expect(screen.getByPlaceholderText('Search Expenses').value).toBe(
+      filters.text,
+    );
+    expect(screen.getByTestId('select').value).toBe(filters.sortBy);
+  });
 
-test ('should render ExpenseListFilters with alt data correctly', () => {
-    wrapper.setProps({filters: altFilters});
-    expect(wrapper).toMatchSnapshot();
-});
+  it('should render ExpenseListFilters with alt data correctly', () => {
+    render(
+      <ExpenseListFilters
+        filters={altFilters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
 
-test ('should handle text change', () => {
+    expect(screen.getByPlaceholderText('Search Expenses').value).toBe(
+      altFilters.text,
+    );
+    expect(screen.getByTestId('select').value).toBe(altFilters.sortBy);
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(document.querySelector("[id='filter-datepicker']").value).toBe(
+      '12/31/1969 - 01/03/1970',
+    );
+  });
+
+  it('should handle text change', async () => {
     const updateText = 'updated text';
-    wrapper.find('input').simulate('change', {
-        target: {
-            value: updateText
-        }
+    render(
+      <ExpenseListFilters
+        filters={filters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
+
+    const searchTextInput = screen.getByPlaceholderText('Search Expenses');
+    fireEvent.input(searchTextInput, { target: { value: updateText } });
+
+    await waitFor(() => {
+      expect(setTextFilter).toHaveBeenCalled();
     });
+  });
 
-    expect(setTextFilter).toHaveBeenLastCalledWith(updateText);
-}); 
-
-test ('should sort by date', () => {
+  it('should sort by date', () => {
     const dateValue = 'date';
-    wrapper.find('select').simulate('change', {
-        target: {
-            value: dateValue
-        }
-    });
+    render(
+      <ExpenseListFilters
+        filters={filters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
+    const selectSortInput = screen.getByTestId('select');
+    fireEvent.change(selectSortInput, { target: { value: dateValue } });
 
     expect(sortByDate).toHaveBeenCalled();
-});
+  });
 
-test ('should sort by amount', () => {
+  it('should sort by amount', () => {
     const amountValue = 'amount';
-    wrapper.find('select').simulate('change', {
-        target: {
-            value: amountValue
-        }
-    });
+    render(
+      <ExpenseListFilters
+        filters={filters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
+    const selectSortInput = screen.getByTestId('select');
+    fireEvent.change(selectSortInput, { target: { value: amountValue } });
 
     expect(sortByAmount).toHaveBeenCalled();
-});
+  });
 
-test ('should handle date changes', () => {
-    const startDate = moment();
-    const endDate = moment().add(4, 'days');
-    wrapper.find('DateRangePicker').prop('onDatesChange')({startDate, endDate});
+  it('should handle date changes', async () => {
+    const startDate = moment().add(1, 'days').toDate();
+    const endDate = moment().add(4, 'days').toDate();
+    const propFilters = { ...filters };
+    const view = render(
+      <ExpenseListFilters
+        filters={propFilters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
 
-    expect(setStartDate).toHaveBeenLastCalledWith(startDate);
-    expect(setEndDate).toHaveBeenLastCalledWith(endDate);
-});
+    // eslint-disable-next-line testing-library/no-node-access
+    const datepicker = document.querySelector("[id='filter-datepicker']");
+    setStartDate.mockImplementation((date) => {
+      propFilters.startDate = new Date(date);
+    });
+    fireEvent.input(datepicker, {
+      target: { value: startDate },
+    });
+    await waitFor(() => {
+      expect(setStartDate).toHaveBeenCalledWith(startDate.getTime());
+    });
 
-test ('should handle date focus change', () => {
-    const calendarFocused = true;
-    wrapper.find('DateRangePicker').prop('onFocusChange')(calendarFocused);
+    view.rerender(
+      <ExpenseListFilters
+        filters={propFilters}
+        setTextFilter={setTextFilter}
+        sortByDate={sortByDate}
+        sortByAmount={sortByAmount}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />,
+    );
 
-    expect(wrapper.state('calendarFocused')).toBe(calendarFocused);
+    fireEvent.input(datepicker, {
+      target: { value: endDate },
+    });
+
+    await waitFor(() => {
+      expect(setStartDate).toHaveBeenLastCalledWith(startDate.getTime());
+    });
+    expect(setEndDate).toHaveBeenLastCalledWith(endDate.getTime());
+  });
 });
