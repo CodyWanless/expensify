@@ -1,20 +1,23 @@
-// import { login, logout } from './../../actions/auth';
+import { login, logout } from '../../actions/auth';
 
-// test ('should generate login action', () => {
-//     const id = '123412';
-//     const action = login(id);
+jest.mock('../../firebase/firebase');
 
-//     expect(action).toEqual({
-//         type: 'LOGIN',
-//         uid: id
-//     });
-// });
+describe('auth actions', () => {
+  it('should generate login action', () => {
+    const id = '123412';
+    const action = login(id);
 
-// test ('should generate logout action', () => {
-//     const action = logout();
+    expect(action).toEqual({
+      type: 'LOGIN',
+      uid: id,
+    });
+  });
 
-//     expect(action).toEqual({
-//         type: 'LOGOUT'
-//     });
-// });
-it.skip('skip', () => {});
+  it('should generate logout action', () => {
+    const action = logout();
+
+    expect(action).toEqual({
+      type: 'LOGOUT',
+    });
+  });
+});

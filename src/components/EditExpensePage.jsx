@@ -32,7 +32,11 @@ export default function EditExpensePage() {
       </div>
       <div className="content-container">
         <ExpenseForm onSubmit={onEditExpenseSubmit} expense={expense} />
-        <button onClick={onRemoveClick} className="button button--secondary">
+        <button
+          type="button"
+          onClick={onRemoveClick}
+          className="button button--secondary"
+        >
           Remove Expense
         </button>
       </div>

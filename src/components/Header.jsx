@@ -14,6 +14,7 @@ export default function Header() {
             <h1>Expensify</h1>
           </Link>
           <button
+            type="button"
             onClick={() => dispatch(startLogout())}
             className="button button--link"
           >

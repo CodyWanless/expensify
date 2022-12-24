@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { startLogin } from '../actions/auth';
 
-function LoginPage({ startLogin }) {
+export function LoginPage({ startLogin }) {
   return (
     <div className="box-layout">
       <div className="box-layout__box">
